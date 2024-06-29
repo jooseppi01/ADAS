@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Environment;
 import android.view.View;
+import android.widget.*;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
@@ -13,29 +14,24 @@ import android.util.Base64;
 
 import android.util.Log;
 import org.eclipse.paho.client.mqttv3.MqttException;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.*;
 import java.util.Arrays;
+import java.util.Iterator;
 
 import android.Manifest;
-import android.widget.ImageView;
-import android.widget.Toast;
-
-
-import android.widget.Button;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Spinner;
 
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
 
     AbstractMQTTHelper mqttHelper;
     ImageView mImageView;
+    TextView textView;
     Spinner spino;
-    String[] courses = {"image1", "image2", "image3", "image4", "image5", "image6", "image7", "image8", "image9"};
+    String[] courses = {"image 0", "image 1", "image 2", "image 3", "image 4", "image 5", "image 6", "image 7", "image 8", "image 9"};
 
 
     @Override
@@ -45,6 +41,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         InitializeMQTT();
         InitializeSpinner();
+        textView = findViewById(R.id.textView);
     }
 
     @Override
@@ -56,58 +53,64 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         InputStream imageStream;
 
         switch (selectedItem) {
-            case "image1":
+            case "image 0":
                 mImageView = findViewById(R.id.imageView2);
-                mImageView.setImageResource(R.drawable.image1);
-                imageStream = getResources().openRawResource(R.raw.image1);
+                mImageView.setImageResource(R.drawable.img0);
+                imageStream = getResources().openRawResource(R.raw.img0);
                 buttonClick(imageStream);
                 break;
-            case "image2":
+            case "image 1":
                 mImageView = findViewById(R.id.imageView2);
-                mImageView.setImageResource(R.drawable.image2);
-                imageStream = getResources().openRawResource(R.raw.image2);
+                mImageView.setImageResource(R.drawable.img1);
+                imageStream = getResources().openRawResource(R.raw.img1);
                 buttonClick(imageStream);
                 break;
-            case "image3":
+            case "image 2":
                 mImageView = findViewById(R.id.imageView2);
-                mImageView.setImageResource(R.drawable.image3);
-                imageStream = getResources().openRawResource(R.raw.image3);
+                mImageView.setImageResource(R.drawable.img2);
+                imageStream = getResources().openRawResource(R.raw.img2);
                 buttonClick(imageStream);
                 break;
-            case "image4":
+            case "image 3":
                 mImageView = findViewById(R.id.imageView2);
-                mImageView.setImageResource(R.drawable.image4);
-                imageStream = getResources().openRawResource(R.raw.image4);
+                mImageView.setImageResource(R.drawable.img3);
+                imageStream = getResources().openRawResource(R.raw.img3);
                 buttonClick(imageStream);
                 break;
-            case "image5":
+            case "image 4":
                 mImageView = findViewById(R.id.imageView2);
-                mImageView.setImageResource(R.drawable.image5);
-                imageStream = getResources().openRawResource(R.raw.image5);
+                mImageView.setImageResource(R.drawable.img4);
+                imageStream = getResources().openRawResource(R.raw.img4);
                 buttonClick(imageStream);
                 break;
-            case "image6":
+            case "image 5":
                 mImageView = findViewById(R.id.imageView2);
-                mImageView.setImageResource(R.drawable.image6);
-                imageStream = getResources().openRawResource(R.raw.image6);
+                mImageView.setImageResource(R.drawable.img5);
+                imageStream = getResources().openRawResource(R.raw.img5);
                 buttonClick(imageStream);
                 break;
-            case "image7":
+            case "image 6":
                 mImageView = findViewById(R.id.imageView2);
-                mImageView.setImageResource(R.drawable.image7);
-                imageStream = getResources().openRawResource(R.raw.image7);
+                mImageView.setImageResource(R.drawable.img6);
+                imageStream = getResources().openRawResource(R.raw.img6);
                 buttonClick(imageStream);
                 break;
-            case "image8":
+            case "image 7":
                 mImageView = findViewById(R.id.imageView2);
-                mImageView.setImageResource(R.drawable.image8);
-                imageStream = getResources().openRawResource(R.raw.image8);
+                mImageView.setImageResource(R.drawable.img7);
+                imageStream = getResources().openRawResource(R.raw.img7);
                 buttonClick(imageStream);
                 break;
-            case "image9":
+            case "image 8":
                 mImageView = findViewById(R.id.imageView2);
-                mImageView.setImageResource(R.drawable.image9);
-                imageStream = getResources().openRawResource(R.raw.image9);
+                mImageView.setImageResource(R.drawable.img8);
+                imageStream = getResources().openRawResource(R.raw.img8);
+                buttonClick(imageStream);
+                break;
+            case "image 9":
+                mImageView = findViewById(R.id.imageView2);
+                mImageView.setImageResource(R.drawable.img9);
+                imageStream = getResources().openRawResource(R.raw.img9);
                 buttonClick(imageStream);
                 break;
         }
@@ -154,21 +157,36 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 try {
                     JSONObject jsonObject = new JSONObject(message);
 
+                    // Extract the keys object
+                    JSONObject keysObject = jsonObject.getJSONObject("keys");
+
+                    // Initialize StringBuilder for coordinates
+                    StringBuilder coordinatesBuilder = new StringBuilder();
+
+                    // Iterate over keys (since keySet() is not directly available)
+                    Iterator<String> keys = keysObject.keys();
+                    while (keys.hasNext()) {
+                        String key = keys.next();
+                        JSONArray coordinatesArray = keysObject.getJSONArray(key);
+                        coordinatesBuilder.append("Class: ").append(key).append(", Coordinates: ").append(coordinatesArray).append("\n");
+                    }
+                    String coordinates = coordinatesBuilder.toString().trim();
+
                     // Extract the base64 encoded image string
                     String base64Image = jsonObject.getString("image");
 
                     // Decode base64 string to byte array
                     byte[] decodedString = Base64.decode(base64Image, Base64.DEFAULT);
 
-                    // Convert byte array to Bitmap (if needed)
-                     Bitmap decodedBitmap = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+                    // Convert byte array to Bitmap
+                    Bitmap decodedBitmap = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
 
-                    // Now you can handle the decoded data as needed
-                    // Example: Update UI with the decoded data
-                    // runOnUiThread(() -> updateUI(decodedMessage));
-
-                    mImageView = findViewById(R.id.imageView2);
+                    // Update the ImageView to show the decoded bitmap
                     mImageView.post(() -> mImageView.setImageBitmap(decodedBitmap));
+                    //textView = findViewById(R.id.textView);
+
+                    // Update the TextView with the keys and coordinates
+                    textView.post(() -> textView.setText( coordinates));
 
                 } catch (JSONException e) {
                     e.printStackTrace();
